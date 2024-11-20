@@ -542,6 +542,18 @@ RSpec.describe RequestMailer do
       expect(mail.subject).to eq('Someone has updated the status of your request')
     end
 
+    context "when the user does not use default locale" do
+      before do
+        info_request.user.locale = 'es'
+      end
+
+      it "translates the subject" do
+        expect(mail.subject).to eq(
+          'Alguien ha actualizado el estado de tu solicitud'
+        )
+      end
+    end
+
     it 'should tell them what status was picked' do
       expect(mail.body).to match(/"refused."/)
     end
@@ -601,6 +613,23 @@ RSpec.describe RequestMailer do
     it 'should not create HTML entities in the subject line' do
       mail = RequestMailer.new_response(FactoryBot.create(:info_request, title: "Here's a request"), FactoryBot.create(:incoming_message))
       expect(mail.subject).to eq "New response to your FOI request - Here's a request"
+    end
+
+    context "when the user does not use default locale" do
+      before do
+        info_request.title = "A request"
+        info_request.user.locale = 'es'
+      end
+
+      it "translates the subject" do
+        mail = RequestMailer.new_response(
+          info_request,
+          FactoryBot.create(:incoming_message)
+        )
+        expect(mail.subject).to eq(
+          "Nueva respuesta a tu solicitud de información - A request"
+        )
+      end
     end
 
     it 'should send pro users a signin link' do
@@ -733,6 +762,21 @@ RSpec.describe RequestMailer do
       expect(mail.subject).to eq "Delayed response to your FOI request - Here's a request"
     end
 
+    context "when the user does not use default locale" do
+      before do
+        @info_request = FactoryBot.create(:info_request, title: "A request")
+        @info_request.user.locale = 'es'
+        @mail = RequestMailer.overdue_alert(@info_request, @info_request.user)
+      end
+
+      it "translates the subject" do
+        expect(@mail.subject).to eq(
+          "Respuesta retrasada a tu solicitud de acceso a información - "\
+          "A request"
+        )
+      end
+    end
+
     it "sends an overdue alert mail to request creators" do
       travel_to(31.days.from_now) do
         RequestMailer.alert_overdue_requests
@@ -847,6 +891,24 @@ RSpec.describe RequestMailer do
                                    "to your FOI request - Here's a request"
       end
 
+      context "when the user does not use default locale" do
+        before do
+          @info_request = FactoryBot.create(:info_request, title: "A request")
+          @info_request.user.locale = 'es'
+          @mail = RequestMailer.very_overdue_alert(
+            @info_request,
+            @info_request.user
+          )
+        end
+
+        it "translates the subject" do
+          expect(@mail.subject).to eq(
+            "La respuesta a tu solicitud de información está muy retrasada - "\
+            "A request"
+          )
+        end
+      end
+
       it "sends a very overdue alert mail to creators of very overdue requests" do
         travel_to(Time.now + 61.days) do
           RequestMailer.alert_overdue_requests
@@ -902,6 +964,23 @@ RSpec.describe RequestMailer do
       mail = RequestMailer.not_clarified_alert(FactoryBot.create(:info_request, title: "Here's a request"), FactoryBot.create(:incoming_message))
       expect(mail.subject).to eq "Clarify your FOI request - Here's a request"
     end
+
+    context "when the user does not use default locale" do
+      before do
+        info_request = FactoryBot.create(:info_request, title: "A request")
+        info_request.user.locale = 'es'
+        @mail = RequestMailer.not_clarified_alert(
+          info_request,
+          FactoryBot.create(:incoming_message)
+        )
+      end
+
+      it "translates the subject" do
+        expect(@mail.subject).to eq(
+          "Clarifica tu solicitud de información - A request"
+        )
+      end
+    end
   end
 
   describe "comment_on_alert" do
@@ -909,12 +988,49 @@ RSpec.describe RequestMailer do
       mail = RequestMailer.comment_on_alert(FactoryBot.create(:info_request, title: "Here's a request"), FactoryBot.create(:comment))
       expect(mail.subject).to eq "Somebody added a note to your FOI request - Here's a request"
     end
+
+    context "when the user does not use default locale" do
+      before do
+        info_request = FactoryBot.create(:info_request, title: "A request")
+        info_request.user.locale = 'es'
+        @mail = RequestMailer.comment_on_alert(
+          info_request,
+          FactoryBot.create(:comment)
+        )
+      end
+
+      it "translates the subject" do
+        expect(@mail.subject).to eq(
+          "Nuevo comentario en tu solicitud de acceso a información - "\
+          "A request"
+        )
+      end
+    end
   end
 
   describe "comment_on_alert_plural" do
     it 'should not create HTML entities in the subject line' do
       mail = RequestMailer.comment_on_alert_plural(FactoryBot.create(:info_request, title: "Here's a request"), 2, FactoryBot.create(:comment))
       expect(mail.subject).to eq "Some notes have been added to your FOI request - Here's a request"
+    end
+
+    context "when the user does not use default locale" do
+      before do
+        info_request = FactoryBot.create(:info_request, title: "A request")
+        info_request.user.locale = 'es'
+        @mail = RequestMailer.comment_on_alert_plural(
+          info_request,
+          2,
+          FactoryBot.create(:comment)
+        )
+      end
+
+      it "translates the subject" do
+        expect(@mail.subject).to eq(
+          "Nuevos comentarios en tu solicitud de acceso a información - "\
+          "A request"
+        )
+      end
     end
   end
 
